@@ -1,9 +1,14 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import re
 import sys
 from argparse import ArgumentParser, FileType
 import bibtexparser
+
+
+FIXED_TITLE_RE = re.compile('^{.*}$')
+BRACKETS_RE = re.compile('{.*?}')
 
 
 def normalize(input_file, output_file):
@@ -11,7 +16,7 @@ def normalize(input_file, output_file):
     read a *.bib file, change every 'title' and 'booktitle' field to only
     use uppercase for the first letter and write the changes to the output
     file.
-    
+
     Parameters
     ----------
     input_file : file
@@ -25,8 +30,18 @@ def normalize(input_file, output_file):
     for entry in bib_database.entries:
         for field in ('title', 'booktitle'):
             if field in entry:
-                new_title = entry['title'].capitalize()
-                entry['title'] = new_title
+                field_str = entry[field]
+                # don't touch titles that are (partially) enclosed in brackets
+                if (not FIXED_TITLE_RE.match(field_str)
+                   and not BRACKETS_RE.search(field_str)):
+                    if ':' in field_str:
+                        # split no more than once
+                        title, subtitle = field_str.split(':', 1)
+                        entry[field] = u'{}: {}'.format(title,
+                                                        subtitle.lower())
+                    else:
+                        new_field_str = field_str.capitalize()
+                        entry[field] = new_field_str
 
     new_bibstr = bibtexparser.dumps(bib_database)
     output_file.write(new_bibstr.encode('utf-8'))
