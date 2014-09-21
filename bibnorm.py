@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import sys
-from argparse import ArgumentParser
+from argparse import ArgumentParser, FileType
 import bibtexparser
 
 
@@ -35,11 +35,13 @@ def normalize(input_file, output_file):
 if __name__ == '__main__':
     parser = ArgumentParser(prog='bibnorm')
 
-    parser.add_argument(dest='input_file', default=sys.stdin, nargs='?',
+    parser.add_argument(
+        dest='input_file', default=sys.stdin, nargs='?', type=FileType('r'),
         help=('Specify the *.bib input file. If no input file is specified, '
               'bibnorm will try to read from STDIN'))
 
-    parser.add_argument(dest='output_file', default=sys.stdout, nargs='?',
+    parser.add_argument(
+        dest='output_file', default=sys.stdout, nargs='?', type=FileType('w'),
         help=('Specify the *.bib output file. If no output file is specified, '
               'bibnorm will write to STDOUT'))
 
